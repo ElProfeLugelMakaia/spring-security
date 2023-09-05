@@ -1,5 +1,6 @@
 package com.example.asistencias.controller;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,7 +18,7 @@ public class AsistenciasController {
     }
 
     @GetMapping()
-    public String get(){
-        return "Si";
+    public String get(Authentication authentication){
+        return "Si " + authentication.getName();
     }
 }

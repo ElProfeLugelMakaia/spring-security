@@ -2,11 +2,13 @@ package com.example.asistencias.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
@@ -14,17 +16,21 @@ import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
-@EnableWebSecurity
-public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
+public class SecurityConfiguration {
 
     @Bean
-    public InMemoryUserDetailsManager userDetailsManager() {
+    public UserDetailsService userDetailsService() {
         System.out.println("Se ejecutó");
         UserDetails user = User.withUsername("Lugel")
                 .password(passwordEncoder().encode("Lugel"))
                 .roles("ADMIN")
                 .build();
-        return new InMemoryUserDetailsManager(user);
+
+        UserDetails carlos = User.withUsername("Carlos")
+                .password(passwordEncoder().encode("Carlos"))
+                .roles("USER")
+                .build();
+        return new InMemoryUserDetailsManager(user, carlos);
     }
 
     @Bean
@@ -35,14 +41,18 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
-
-        System.out.println("Se ejecutó filter chain");
-        httpSecurity.authorizeHttpRequests()
-                //.antMatchers("/asistencias").permitAll()
-                .anyRequest().authenticated()
-                .and()
-                .httpBasic();
-
-        return  httpSecurity.build();
+        System.out.println("Se ejecutó filterChain");
+        httpSecurity.csrf().disable()
+                .authorizeHttpRequests((authorize) -> {
+                    authorize.antMatchers("/public/**").permitAll();
+                })
+                .authorizeHttpRequests((authorize) -> {
+                    authorize.antMatchers("/dashboard").hasAuthority("ADMIN");
+                })
+                .authorizeHttpRequests((authorize) -> {
+                    authorize.anyRequest().authenticated();
+                }).httpBasic(Customizer.withDefaults())
+        ;
+        return httpSecurity.build();
     }
 }
