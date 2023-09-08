@@ -21,4 +21,14 @@ public class AsistenciasController {
     public String get(Authentication authentication){
         return "Si " + authentication.getName();
     }
+
+    @GetMapping("/dashboard")
+    public String getDashboard(Authentication authentication){
+        return "Si " + authentication.getName();
+    }
+
+    @GetMapping("/verify")
+    public String getVerify(Authentication authentication){
+        return "Si " + authentication.getName();
+    }
 }
